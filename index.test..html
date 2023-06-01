@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat Example</title>
+  <style>
+    .chat-container {
+      width: 400px;
+      margin: 0 auto;
+    }
+    .chat-messages {
+      height: 300px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      overflow-y: scroll;
+    }
+    .chat-input {
+      display: flex;
+    }
+    .chat-input textarea {
+      flex: 1;
+      resize: none;
+      padding: 5px;
+    }
+    .chat-input button {
+      margin-left: 10px;
+      padding: 5px 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input">
+      <textarea id="message-input" placeholder="Type your message"></textarea>
+      <button id="send-button">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // Establish WebSocket connection
+    const socket = new WebSocket('ws://localhost:8080');
+
+    // DOM elements
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const chatMessages = document.getElementById('chat-messages');
+
+    // Function to display messages in the chat container
+    function displayMessage(message) {
+      const messageElement = document.createElement('p');
+      messageElement.textContent = message;
+      chatMessages.appendChild(messageElement);
+    }
+
+    // Handle incoming messages from the WebSocket server
+    socket.addEventListener('message', function (event) {
+      const message = event.data;
+      displayMessage('Received: ' + message);
+    });
+
+    // Send message when the send button is clicked
+    sendButton.addEventListener('click', function () {
+      const message = messageInput.value;
+      if (message) {
+        socket.send(message);
+        displayMessage('Sent: ' + message);
+        messageInput.value = '';
+      }
+    });
+  </script>
+</body>
+</html>
