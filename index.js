@@ -50,21 +50,18 @@ function sendTurnTypingOffToUser(username, message) {
     }
 }
 
-function getFriendsOnline(username) {
-    getFriends(username)
-        .then((friends) => {
-            const friendsOnline = friends.filter((friend) => {
-                return userConnections.has(friend);
-            });
-            return friendsOnline;
-        })
-        .catch((error) => {
-            console.error(error);
-        });
+async function getFriendsOnline(username) {
+    try {
+        const friends = await getFriends(username);
+        const friendsOnline = friends.filter(friend => userConnections.has(friend));
+        return friendsOnline;
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 
-wss.on('connection', function connection(ws, req) {
+wss.on('connection', async function connection(ws, req) {
     const url = new URL(req.url, 'http://localhost:8080');
     const queryParams = url.searchParams;
 
@@ -87,7 +84,7 @@ wss.on('connection', function connection(ws, req) {
     ws.send(JSON.stringify({
         action: actions.FRIENDS_ONLINE,
         payload: {
-            friends: getFriendsOnline(userData.sub),
+            friends: await getFriendsOnline(userData.sub),
         }
     }));
 
