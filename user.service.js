@@ -26,5 +26,31 @@ module.exports = {
                 resolve(resultFriends);
             });
         });
+    },
+    getMessages: function (username) {
+        const sql = `SELECT * FROM chat WHERE username_sender = ? OR username_receiver = ? ORDER BY date`;
+
+        return new Promise((resolve, reject) => {
+            db.query(sql, [username, username], function (error, results) {
+                if (error) {
+                    return reject(error);
+                }
+                // Los resultados están ordenados por date
+                resolve(results);
+              });
+        });
+    },
+    saveMessage: function (sender, receiver, message) {
+        const sql = `INSERT INTO chat (username_sender, username_receiver, date, message) VALUES (?, ?, NOW(), ?)`;
+
+        return new Promise((resolve, reject) => {
+            db.query(sql, [sender, receiver, message], function (error, results) {
+                if (error) {
+                    return reject(error);
+                }
+                resolve(results);
+              });
+        });
     }
+
 }
