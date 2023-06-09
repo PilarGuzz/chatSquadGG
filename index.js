@@ -20,7 +20,7 @@ const actions = {
 
 function broadcastToFriends(friends, username, action) {
     friends.forEach((friend) => {
-        const ws = userConnections.get(friend);
+        const ws = userConnections.get(friend.username);
         if (ws) {
             ws.send(JSON.stringify({
                 action: action,
@@ -66,10 +66,11 @@ function sendTurnTypingOffToUser(receiver) {
 }
 
 function getFriendsList(friends) {
-    return friends.map((username) => {
+    return friends.map((friend) => {
         return {
-            username,
-            online: userConnections.has(username),
+            username: friend.username,
+            img: friend.img,
+            online: userConnections.has(friend.username),
         };
     });
 }

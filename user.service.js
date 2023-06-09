@@ -12,15 +12,21 @@ const db = mysql.createConnection({
 module.exports = {
     getFriends: function (username) {
         return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM friendship WHERE (user_username = ? AND status = "ACCEPTED") OR (friend_username = ? AND status = "ACCEPTED")', [username, username], (error, results) => {
+            db.query(`SELECT f.*, u1.img AS user_img, u2.img AS friend_img 
+            FROM friendship AS f 
+            LEFT JOIN user AS u1 ON f.user_username = u1.username 
+            LEFT JOIN user AS u2 ON f.friend_username = u2.username 
+            WHERE (f.user_username = ? AND f.status = "ACCEPTED") 
+            OR (f.friend_username = ? AND f.status = "ACCEPTED")`, 
+            [username, username], (error, results) => {
                 if (error) {
                     return reject(error);
                 }
                 const resultFriends = results.map((result) => {
                     if (result.user_username === username) {
-                        return result.friend_username;
+                        return { username: result.friend_username, img: result.friend_img };
                     } else {
-                        return result.user_username;
+                        return { username: result.user_username, img: result.user_img };
                     }
                 });
                 resolve(resultFriends);
