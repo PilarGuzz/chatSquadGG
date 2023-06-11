@@ -5,6 +5,7 @@ const { getFriends, getMessages, saveMessage } = require('./user.service');
 
 const wss = new WebSocketServer({ port: 8080 });
 
+//USUARIOS conectados
 const userConnections = new Map();
 
 // enum for actions
@@ -37,8 +38,15 @@ async function sendMessageToUser(sender, receiver, message) {
 
     const ws = userConnections.get(receiver);
     if (ws) {
-        ws.send(JSON.stringify(message));
-    }
+        ws.send(JSON.stringify({
+            action: actions.SEND_MESSAGE,
+            payload: {
+                username: sender,
+                message,
+                receiver
+            }
+        }));   
+     }
 }
 
 function sendTurnTypingOnToUser(receiver) {
@@ -105,7 +113,6 @@ wss.on('connection', async function connection(ws, req) {
     const messages = await getMessages(username);
     addMessagesToFriends(friendList, messages);
 
-
     ws.send(JSON.stringify({
         action: actions.FRIENDS,
         payload: {
@@ -121,7 +128,7 @@ wss.on('connection', async function connection(ws, req) {
             const message = JSON.parse(data);
             const action = message.action;
             const payload = message.payload;
-
+           
             switch (action) {
                 case actions.PING:
                     ws.send(JSON.stringify({
