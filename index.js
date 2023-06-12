@@ -97,7 +97,7 @@ function getFriendsList(friends) {
   }
 
 wss.on('connection', async function connection(ws, req) {
-    const url = new URL(req.url, 'http://localhost:8080');
+    const url = new URL(req.url, 'http://'+ process.env.HOST_DB +':8080');
     const queryParams = url.searchParams;
 
     const jwt = queryParams.get('jwt');
