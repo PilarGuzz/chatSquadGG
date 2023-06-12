@@ -4,7 +4,7 @@ const WebSocketServer = require('ws').Server;
 const { getFriends, getMessages, saveMessage } = require('./user.service');
 
 const wss = new WebSocketServer({ port: 8080 });
-
+let friendsList = [];
 //USUARIOS conectados
 const userConnections = new Map();
 
@@ -17,6 +17,7 @@ const actions = {
     USER_TYPING: 'USER_TYPING',
     USER_STOPPED_TYPING: 'USER_STOPPED_TYPING',
     FRIENDS: 'FRIENDS',
+    FRIENDS_LIST: 'FRIENDS_LIST',
 };
 
 function broadcastToFriends(friends, username, action) {
@@ -91,7 +92,9 @@ function addMessagesToFriends(friends, messages) {
         friend.messages = friendMessages;
     });
 }
-
+function getFriendsList(friends) {
+    return friendsList;
+  }
 
 wss.on('connection', async function connection(ws, req) {
     const url = new URL(req.url, 'http://localhost:8080');
@@ -109,14 +112,14 @@ wss.on('connection', async function connection(ws, req) {
 
     broadcastToFriends(friends, username, actions.USER_ONLINE);
 
-    const friendList = getFriendsList(friends);
+    friendsList = getFriendsList(friends);
     const messages = await getMessages(username);
-    addMessagesToFriends(friendList, messages);
+    addMessagesToFriends(friendsList, messages);
 
     ws.send(JSON.stringify({
         action: actions.FRIENDS,
         payload: {
-            friends: friendList,
+            friends: friendsList,
         }
     }));
 
@@ -130,11 +133,11 @@ wss.on('connection', async function connection(ws, req) {
             const payload = message.payload;
            
             switch (action) {
-                case actions.PING:
+                case actions.FRIENDS_LIST:
                     ws.send(JSON.stringify({
-                        action: actions.PING,
+                        action: actions.FRIENDS_LIST,
                         payload: {
-                            message: 'pong',
+                          friends: friendsList,
                         }
                     }));
                     break;
