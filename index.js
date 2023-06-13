@@ -92,15 +92,11 @@ function addMessagesToFriends(friends, messages) {
         friend.messages = friendMessages;
     });
 }
-function getFriendsList(friends) {
-    return friendsList;
-  }
 
 wss.on('connection', async function connection(ws, req) {
-    const url = new URL(req.url);
-    const queryParams = url.searchParams;
+    const jwt = new URLSearchParams(req.url.split('?')[1]).get('jwt');
 
-    const jwt = queryParams.get('jwt');
+
     const userData = extractDataFromJWT(jwt);
     const username = userData.sub;
 
