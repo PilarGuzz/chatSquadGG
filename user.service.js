@@ -10,6 +10,7 @@ const db = mysql.createConnection({
 
 
 module.exports = {
+    //devuelve los amigos aceptado de la bd con el nombre y la imagen
     getFriends: function (username) {
         return new Promise((resolve, reject) => {
             db.query(`SELECT f.*, u1.img AS user_img, u2.img AS friend_img 
@@ -33,6 +34,7 @@ module.exports = {
             });
         });
     },
+    //Devuelve los mensajes del chat de un usuario tanto los enviados como los recibidos
     getMessages: function (username) {
         const sql = `SELECT * FROM chat WHERE username_sender = ? OR username_receiver = ? ORDER BY date`;
 
@@ -46,6 +48,7 @@ module.exports = {
               });
         });
     },
+    //Guarda un mensaje enviado en la bd
     saveMessage: function (sender, receiver, message) {
         const sql = `INSERT INTO chat (username_sender, username_receiver, date, message) VALUES (?, ?, NOW(), ?)`;
 

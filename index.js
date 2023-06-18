@@ -105,13 +105,15 @@ wss.on('connection', async function connection(ws, req) {
     userConnections.set(username, ws);
 
     const friends = await getFriends(username);
-
+    //emite a los amigos que está online al conectarse
     broadcastToFriends(friends, username, actions.USER_ONLINE);
-
+    //asigna los amigos de la bd a la variable al conectarse
     friendsList = getFriendsList(friends);
+    //recupera los mensajes de bd al conectarse
     const messages = await getMessages(username);
+    //añade los chats a cada amigo segun corresponda al conectarse
     addMessagesToFriends(friendsList, messages);
-
+    //Envia los amigos con los chats al cliente al conectarse
     ws.send(JSON.stringify({
         action: actions.FRIENDS,
         payload: {
@@ -121,7 +123,7 @@ wss.on('connection', async function connection(ws, req) {
 
 
     ws.on('error', console.error);
-
+    //Recibe la peticion y dependiendo del action realizará una función u otra
     ws.on('message', async function message(data) {
         try {
             const message = JSON.parse(data);
@@ -129,6 +131,7 @@ wss.on('connection', async function connection(ws, req) {
             const payload = message.payload;
            
             switch (action) {
+                //Envia los amigos con los chats
                 case actions.FRIENDS_LIST:
                     ws.send(JSON.stringify({
                         action: actions.FRIENDS_LIST,
@@ -137,12 +140,15 @@ wss.on('connection', async function connection(ws, req) {
                         }
                     }));
                     break;
+                //envia el mensaje y lo almacena en la bd
                 case actions.SEND_MESSAGE:
                     await sendMessageToUser(username, payload.to, payload.message);
                     break;
+                //envia un mensaje de typing para manejarlo en el cliente
                 case actions.USER_TYPING:
                     sendTurnTypingOnToUser(payload.to);
                     break;
+                //envia un mensaje vacio para manejarlo en el cliente
                 case actions.USER_STOPPED_TYPING:
                     sendTurnTypingOffToUser(payload.to);
                     break;
@@ -160,7 +166,6 @@ wss.on('connection', async function connection(ws, req) {
         const userId = userConnections.get(username);
         userConnections.delete(userId);
 
-        // ToDo: broadcast to all user friends that user is offline
         broadcastToFriends(friends, username, actions.USER_OFFLINE);
 
     });
